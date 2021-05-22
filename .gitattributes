@@ -1,0 +1,6 @@
+ 
+# Languages detection
+# KiCAD
+# *.pro linguist-detectable=true
+*.kicad_pcb linguist-detectable=true
+*.sch linguist-detectable=true
