@@ -10,7 +10,7 @@ In order to repair the tester, I had to replace the microcontroller. I chose ATm
 
 ## Magnetic Sensor AS5040
 
-AS5040 manufactured by [ams AG](https://ams.com/) is a 10-bit rotary position sensor with digital and analog angle output.
+AS5040, manufactured by [ams AG](https://ams.com/), is a 10-bit rotary position sensor with digital and analog angle output.
 
 ![AS5040 SSOP-16](https://raw.githubusercontent.com/4x1md/as5040-tester/main/images/as5040-ssop-16.png)
 
@@ -35,7 +35,7 @@ The main blocks of the tester are:
 * 7805 linear voltage regulator,
 * UART to RS-232 level converter which converts logic levels for the LCD display.
 
-The following changes were made to the original circuit:
+The following improvements were made to the original circuit:
 
 1. Input and output capacitors in the power supply were increased to 470uF and 100uF respectively.
 
@@ -43,7 +43,7 @@ The following changes were made to the original circuit:
 
 3. RC-filters were added to the SPI lines in order to reduce noise and ringing caused by the long unshielded wires between the microcontroller and the sensor.
 
-4. Series 100 Ohm resistor between power input and sensor power line. The resistor is used to limit the sensor current if its power input is short-circuited.
+4. Series 100 Ohm resistor between 12V power supply and sensor power input. The resistor is used to limit the sensor current if its power input is short-circuited.
 
 The microcontroller communicates with the sensor using SSI bus which is a unidirectional SPI without MOSI line. The SSI speed is approximately 88kHz which is much below the limits of the AS5040 sensor. There was no specific reason for choosing this specific speed. It just works fine and is enough for the purpose of this project. An SSI communication cycle is shown on the following screenshot.
 
