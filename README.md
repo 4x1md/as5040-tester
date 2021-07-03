@@ -2,11 +2,70 @@
 
 ## Overview
 
+A friend asked me to repair a DIY magnetic sensors tester. It was designed to test AS5040 sensors assembled on a PCB. The tester used an ATmega168 microcontroller to control the sensor and a 20x2 symbols LCD display to display the sensor data. The device was powered from a 12V wall power supply. A 7805 linear regulator produced 5V for the uC and the display. The 7805 regulator had a 330nF capacitor on the input and 100nF on the output. The values were taken from the datasheet of the regulator.
+
+A short fault analysis showed that the microcontroller didn't work. A long wire from the power supply together with very low input and output capacitances caused high voltage spikes when the device was turned on. The spikes on the input reached 20V and the spikes on the 5V output rail reached 8V and even more. I suppose that these spikes were the main reason for the failure of the microcontroller.
+
+In order to repair the tester, I had to replace the microcontroller. I chose ATmega8 just because I had one. I also decided to improve the schematics for a better performance. As the device was very old and I didn't have the original firmware, I decided to write my own.
+
 ## Magnetic Sensor AS5040
 
-## Hardware Changes
+AS5040 manufactured by [ams AG](https://ams.com/) is a 10-bit rotary position sensor with digital and analog angle output.
+
+![AS5040 SSOP-16](https://raw.githubusercontent.com/4x1md/as5040-tester/main/images/as5040-ssop-16.png)
+
+The main features of the sensor are:
+
+* Contactless absolute angle position measurement and motion sensing
+* User programmable resolution, pole pairs and zero position
+* Multiple interfaces (SSI, ABI, UVW, PWM)
+* Immune to external magnetic stray fields
+* Max. Speed [rpm]	30000
+* Supply Voltage [V]	3.3 or 5.0
+
+The tester communicates with the sensor using the SSI interface. The interface is the same as SPI except the MOSI line which doesn't exist here.
+
+## Schematics and Hardware Changes
+
+![AS5040 tester schematics](https://raw.githubusercontent.com/4x1md/as5040-tester/main/images/as5040-tester-schematics.png)
+
+The main blocks of the tester are:
+
+* ATmega8 microcontroller,
+* 7805 linear voltage regulator,
+* UART to RS-232 level converter which converts logic levels for the LCD display.
+
+The following changes were made to the original circuit:
+
+1. Input and output capacitors in the power supply were increased to 470uF and 100uF respectively.
+
+2. Pull resistors were added to the SPI lines in order to prevent undefined logic levels when the sensor is diconnected. Pull-ups were added to CS and CLK lines and a pull-down was added to the DO line. If all the bits, received from the sensor are 0's, the software supposes that the sensor is disconnected and displays the corresponding message.
+
+3. RC-filters were added to the SPI lines in order to reduce noise and ringing caused by the long unshielded wires between the microcontroller and the sensor.
+
+4. Series 100 Ohm resistor between power input and sensor power line. The resistor is used to limit the sensor current if its power input is short-circuited.
+
+The microcontroller communicates with the sensor using SSI bus which is a unidirectional SPI without MOSI line. The SSI speed is approximately 88kHz which is much below the limits of the AS5040 sensor. There was no specific reason for choosing this specific speed. It just works fine and is enough for the purpose of this project. An SSI communication cycle is shown on the following screenshot.
+
+![AS5040 SSI communication](https://raw.githubusercontent.com/4x1md/as5040-tester/main/images/as5040-ssi-communication.png)
+
+Channel  | Signal
+--- | ---
+**CH1:** | CS
+**CH2:** | AS5040 DO (SPI MISO)
+**CH4:** | CLK
 
 ## New Software
+
+The firmware reads sensor data approximately 10 times per second. The data is converted to a human-readable form and is displayed on the LCD screen.
+
+The screen has two lines of 20 ASCII symbols. On the first line of the screen the software shows the angle as integer and the status bits. The second line shows a bar graph, length of which changes with the angle.
+
+![LCD example](https://raw.githubusercontent.com/4x1md/as5040-tester/main/images/lcd-display-example.png)
+
+In order to read the sensor data the software generates SSI clock and reads the received bit after each clock rise.
+
+If all the received bits are zeros, the software supposes that the sensor is disconnected and displays ```Sensor disconnected!``` message on the second line. If the received parity bit doesn't match the calculatd parity, ```Parity  error!``` message will be displayed.
 
 ## ATmega8 Fuse Bits
 
@@ -46,6 +105,12 @@ The fuses are written with the following commands:
 ```avrdude -c usbasp -p m8 -B32 -U hfuse:w:0xC9:m```
 
 ## Photos
+
+![Photo 1](https://raw.githubusercontent.com/4x1md/as5040-tester/main/images/tester-photo-1.jpg)
+
+The tester had been assembled on a prototype board. I had relatively short time for repairing, so I didn't develop my own PCB.
+
+![Photo 2](https://raw.githubusercontent.com/4x1md/as5040-tester/main/images/tester-photo-2.jpg)
 
 ## Links
 
